@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kế hoạch triển khai · Hanmedic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Base CO Design System tokens ===== */
+:root{
+  --bg:#f6f8fb;--panel:#ffffff;--soft:#f0f3f8;--line:#e2e7ef;--ink:#16202f;--muted:#5b6678;
+  --brand:#166dba;--brand-s:#e3f0fc;--on-brand:#ffffff;
+  --ev:#166dba;--ev-s:#e6f1fc;--po:#a25904;--po-s:#fdf1e1;--fd:#475569;--fd-s:#eef1f5;
+  --app:#7c3aed;--app-s:#f2ecfe;--core:#0b7a54;--core-s:#e4f6ee;
+  --danger:#cd1a41;--danger-s:#ffe4e6;--danger-ink:#be123c;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 6px 20px rgba(16,24,40,.05);
+  --font-sans:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --top:58px;color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d121c;--panel:#151c2a;--soft:#1b2436;--line:#26314a;--ink:#e7ecf4;--muted:#9aa6ba;
+  --brand:#5aa9f0;--brand-s:#16263d;--on-brand:#0d121c;--ev:#5aa9f0;--ev-s:#152740;--po:#f0a23b;--po-s:#2d2212;
+  --fd:#a3b1c6;--fd-s:#1d2535;--app:#a78bfa;--app-s:#241c3d;--core:#34d399;--core-s:#10291f;
+  --danger:#fb7185;--danger-s:#4c0519;--danger-ink:#fda4af;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d121c;--panel:#151c2a;--soft:#1b2436;--line:#26314a;--ink:#e7ecf4;--muted:#9aa6ba;
+  --brand:#5aa9f0;--brand-s:#16263d;--on-brand:#0d121c;--ev:#5aa9f0;--ev-s:#152740;--po:#f0a23b;--po-s:#2d2212;
+  --fd:#a3b1c6;--fd-s:#1d2535;--app:#a78bfa;--app-s:#241c3d;--core:#34d399;--core-s:#10291f;
+  --danger:#fb7185;--danger-s:#4c0519;--danger-ink:#fda4af;--shadow:none;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+html{scroll-padding-top:calc(var(--top) + 12px + env(safe-area-inset-top,0px))}
+body{background:var(--bg);color:var(--ink);font:15px/1.62 var(--font-sans);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--panel)}
+a{color:var(--brand)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+h1{font-size:36px;line-height:1.2;margin:10px 0 12px;font-weight:800;letter-spacing:-.01em}
+h2{font-size:25px;margin:56px 0 6px;padding-top:10px;display:flex;align-items:center;gap:12px;font-weight:800;line-height:1.25}
+h4{margin:0 0 6px;font-size:15px}
+.h3{font-size:18px;font-weight:700;margin:28px 0 10px;display:flex;align-items:center;gap:10px}
+
+.h3{font-size:18px;font-weight:700;margin:28px 0 10px;display:flex;align-items:center;gap:10px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;height:var(--top);display:flex;align-items:center;gap:14px;padding:0 20px;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.wm{font-weight:800;font-size:20px;color:var(--brand);letter-spacing:-.01em;text-decoration:none}
+.tdiv{width:1px;height:26px;background:var(--line)}
+.ttl{font-size:15px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ttl b{color:var(--ink)}
+.tools{margin-left:auto;display:flex;gap:8px;align-items:center}
+.zoomc{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.zoomc button,.themeb{background:var(--panel);color:var(--ink);border:0;padding:6px 11px;font:14px var(--font-sans);cursor:pointer}
+.zoomc button+button{border-left:1px solid var(--line)}.zval{min-width:58px}
+.themeb{border:1px solid var(--line);border-radius:10px}
+.zoomc button:hover,.themeb:hover{background:var(--soft)}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1440px;margin:0 auto}
+nav.side{position:sticky;top:calc(var(--top) + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - var(--top));padding:18px 14px 40px;border-right:1px solid var(--line);overflow:auto}
+nav.side h6{margin:0 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+nav.side a{display:block;padding:5px 9px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:13.5px}
+nav.side a:hover{background:var(--soft)}
+nav.side a.act{background:var(--brand-s);color:var(--brand);font-weight:600}
+nav.side a.sub2{padding-left:22px;font-size:12.5px;color:var(--muted)}
+main{padding:30px 40px 90px;min-width:0}
+@media (max-width:980px){.wrap{grid-template-columns:1fr}nav.side{display:none}main{padding:18px 16px 60px}.ttl{display:none}h1{font-size:27px}}
+.hero{background:linear-gradient(135deg,var(--brand-s),var(--panel) 70%);border:1px solid var(--line);border-radius:20px;padding:30px 32px}
+@media (max-width:980px){.hero{padding:20px 18px}}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;font-size:12.5px;padding:3px 10px;border-radius:99px;border:1px solid;font-weight:600;white-space:nowrap}
+.chip.ev{background:var(--ev-s);color:var(--ev);border-color:color-mix(in srgb,var(--ev) 35%,transparent)}
+.chip.po{background:var(--po-s);color:var(--po);border-color:color-mix(in srgb,var(--po) 35%,transparent)}
+.chip.core{background:var(--core-s);color:var(--core);border-color:color-mix(in srgb,var(--core) 35%,transparent)}
+.chip.ns{background:var(--fd-s);color:var(--fd);border-color:var(--line)}
+.tag{font-size:11.5px;padding:1px 8px;border-radius:5px;background:var(--soft);color:var(--muted);white-space:nowrap;font-weight:500}
+.rl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.sn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--brand);color:var(--on-brand);font-size:16px;flex:0 0 auto}
+.sn.sm{width:30px;height:28px;font-size:13px;border-radius:8px}
+.sec-lead{color:var(--muted);margin:0 0 16px;max-width:820px}
+.small{font-size:13px;color:var(--muted)}
+.dest{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline;margin:4px 0 18px}
+.dest .lbl{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--po);background:var(--po-s);padding:2px 10px;border-radius:6px}
+.dest b{font-size:15.5px}
+/* overview cards */
+.ov{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:980px){.ov{grid-template-columns:1fr}}
+.ov .card{border-top:4px solid var(--brand);padding:14px 16px}
+.ov .card.ms{border-top-color:var(--po)}.ov .card.nx{border-top-color:var(--core)}
+.ov h4{font-size:16px;line-height:1.35;margin:4px 0 6px}
+.cnt{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--danger-s);color:var(--danger-ink)}
+.pbar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin:6px 0}
+.pbar i{display:block;height:100%;background:var(--brand)}
+/* mline */
+.mline{margin-top:14px;padding:38px 8px 48px;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+.mtrack{position:relative;min-width:680px;height:6px;background:var(--soft);border-radius:99px;margin:0 90px}
+.mtrack .done{position:absolute;left:0;top:0;height:6px;background:var(--brand);border-radius:99px}
+.mk{position:absolute;top:-6px;transform:translateX(-50%)}
+.mk .d{width:18px;height:18px;border-radius:50%;background:var(--panel);border:3px solid var(--brand)}
+.mk.past .d{background:var(--brand)}
+.mk.big .d{border-color:var(--core)}
+.mk .t{position:absolute;top:26px;left:50%;transform:translateX(-50%);white-space:nowrap;text-align:center;font-size:12.5px;font-weight:700;line-height:1.25}
+.mk .t small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+.today{position:absolute;top:-28px;bottom:-6px;border-left:2px dashed var(--danger)}
+.today span{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-size:11.5px;font-weight:700;color:var(--danger-ink);background:var(--danger-s);padding:1px 8px;border-radius:99px;white-space:nowrap}
+/* Part I */
+.asis{display:grid;grid-template-columns:1fr 46px 1.35fr;align-items:stretch}
+@media (max-width:980px){.asis{grid-template-columns:1fr}.asis .ar{transform:rotate(90deg);height:40px}}
+.asis .ar{display:grid;place-items:center;font-size:24px;color:var(--muted)}
+.asis .now{border-top:4px solid var(--fd)}
+.asis .tobe{border-top:4px solid var(--core)}
+.asis h4{font-size:16px;margin-bottom:8px}
+.asis ul{margin:0;padding-left:18px;font-size:14px}.asis li{margin-bottom:6px}
+.outrow{display:grid;grid-template-columns:136px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.outrow:first-of-type{border-top:0;padding-top:0}
+.scope{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
+@media (max-width:980px){.scope{grid-template-columns:1fr}}
+.scope .in{border-left:5px solid var(--brand)}
+.scope .later{background:var(--soft);border:1px dashed var(--muted);border-radius:14px;padding:14px 16px}
+.scope .later ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink)}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 0}
+@media (max-width:640px){.nums{grid-template-columns:1fr 1fr}}
+.nums div{background:var(--soft);border-radius:10px;padding:8px 12px}
+.nums b{font-size:22px;display:block;font-variant-numeric:tabular-nums;line-height:1.25}
+.nums span{font-size:12px;color:var(--muted)}
+/* Calendar */
+.cal{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.cal-top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+.cal-top b{font-size:14.5px}
+.cal-scroll{overflow-x:auto}
+.cal-grid{display:grid;min-width:860px}
+.c-lab{position:sticky;left:0;z-index:2;background:var(--panel);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 14px;font-size:13px}
+.c-lab b{display:block;font-size:13.5px;line-height:1.3}.c-lab span{font-size:12px;color:var(--muted);display:block;line-height:1.35}
+.c-hd{border-bottom:1px solid var(--line);border-left:1px solid var(--line);text-align:center;padding:6px 0;font-size:11px;color:var(--muted);line-height:1.25}
+.c-hd b{display:block;color:var(--ink);font-size:12.5px}
+.c-hd.we,.c-cell.we{background:var(--soft)}
+.c-hd.wk{border-left:2px solid var(--line)}
+.c-cell{border-left:1px solid var(--line);border-bottom:1px solid var(--line);min-height:56px}
+.c-cell.wk{border-left:2px solid var(--line)}
+.c-row{display:contents}
+.c-bar{align-self:center;height:28px;margin:0 3px;border-radius:8px;font-size:12px;font-weight:700;display:flex;align-items:center;padding:0 10px;white-space:nowrap;overflow:hidden;z-index:1}
+.c-bar.done{background:var(--core);color:var(--on-brand)}
+.c-bar.now{background:var(--brand);color:var(--on-brand)}
+.c-bar.plan{background:var(--brand-s);color:var(--brand);border:1px dashed var(--brand)}
+.c-bar.kh{background:var(--po-s);color:var(--po);border:1px dashed var(--po)}
+.c-bar.op{background:var(--core-s);color:var(--core);border:1px dashed var(--core)}
+.c-ses{align-self:center;justify-self:center;z-index:1;font-size:11px;font-weight:800;padding:2px 5px;border-radius:7px;background:var(--brand);color:var(--on-brand);white-space:nowrap}
+.c-ses.on{background:var(--panel);color:var(--brand);border:2px solid var(--brand)}
+.c-ms{align-self:center;z-index:1;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800;white-space:nowrap;padding-left:6px;color:var(--po)}
+.c-ms i{width:12px;height:12px;background:var(--po);transform:rotate(45deg);flex:0 0 auto}
+.c-today{z-index:1;border-left:2px solid var(--danger);justify-self:center;width:0}
+.cal-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);padding:10px 16px;border-top:1px solid var(--line)}
+.lg{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0}
+/* milestone goals */
+.mgoals{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:1100px){.mgoals{grid-template-columns:1fr 1fr}}@media (max-width:640px){.mgoals{grid-template-columns:1fr}}
+.mg{border-top:4px solid var(--po);display:flex;flex-direction:column;gap:8px}
+.mg.big{border-top-color:var(--core)}
+.mg .when{font-size:12.5px;font-weight:700;color:var(--po)}
+.mg.big .when{color:var(--core)}
+.mg h4{font-size:15.5px;line-height:1.35;margin:0}
+.mg ul{margin:0;padding-left:0;list-style:none;font-size:13.5px}
+.mg li{padding:6px 0;border-top:1px solid var(--line);display:flex;gap:8px;align-items:baseline}
+.mg li::before{content:"●";color:var(--core);font-size:10px}
+.mg .chips{margin-top:auto}
+/* conditions */
+.conds{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:980px){.conds{grid-template-columns:1fr}}
+.cond .hd{display:flex;gap:10px;align-items:flex-start}
+.cond .n{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brand);color:var(--on-brand);font-weight:800;font-size:13px;flex:0 0 auto}
+.cond b{font-size:14.5px;line-height:1.35}
+.cond p{margin:6px 0 8px;font-size:13.5px;color:var(--muted)}
+/* sessions */
+.sess{display:grid;gap:12px}
+.ses{display:grid;grid-template-columns:150px minmax(0,1.4fr) minmax(0,1fr);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.ses .dt{padding:14px 16px;background:var(--soft);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.ses .dt .chip{align-self:flex-start}
+.ses .dt .no{font-size:12px;font-weight:700;color:var(--muted)}
+.ses .dt b{font-size:20px;font-variant-numeric:tabular-nums;line-height:1.2}
+.ses .bd{padding:14px 18px}
+.ses .bd h4{font-size:16px;margin:0 0 8px}
+.ses .bd ul{margin:0;padding-left:18px;font-size:14px}
+.ses .rs{padding:14px 18px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:10px;font-size:13.5px}
+.ses .rs .out b{color:var(--core)}
+.ses.next{border:2px solid var(--core)}.ses.next .dt{background:var(--core-s)}
+.ses.done{opacity:.7}
+@media (max-width:900px){.ses{grid-template-columns:1fr}.ses .dt{border-right:0;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center}.ses .rs{border-left:0;border-top:1px solid var(--line)}}
+footer{color:var(--muted);font-size:12.5px;margin-top:56px;border-top:1px solid var(--line);padding-top:16px}
+@media print{.top,nav.side{display:none}.wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="wm" href="#tong-quan">Base.vn</a>
+  <div class="tdiv"></div>
+  <div class="ttl">Kế hoạch triển khai · <b>Hanmedic</b></div>
+  <div class="tools">
+    <div class="zoomc" role="group" aria-label="Thu phóng">
+      <button type="button" id="zOut" aria-label="Thu nhỏ">−</button>
+      <button type="button" class="zval" id="zVal">100%</button>
+      <button type="button" id="zIn" aria-label="Phóng to">+</button>
+    </div>
+    <button type="button" class="themeb" id="themeBtn" aria-label="Đổi giao diện sáng tối">◐</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="side" aria-label="Mục lục">
+    <h6>Kế hoạch triển khai</h6>
+    <a href="#tong-quan" class="act">Tổng quan</a>
+    <a href="#muc-tieu">I. Mục tiêu dự án</a>
+    <a href="#hien-trang" class="sub2">1.1 Hiện trạng và đầu ra</a>
+    <a href="#pham-vi" class="sub2">1.2 Phạm vi dự án</a>
+    <a href="#timeline">II. Timeline triển khai</a>
+    <a href="#lich" class="sub2">2.1 Lộ trình và mốc xác nhận</a>
+    <a href="#dau-ra-moc" class="sub2">2.2 Mục tiêu tại từng mốc</a>
+    <a href="#giu-moc" class="sub2">2.3 Điều kiện để giữ mốc</a>
+    <a href="#buoi">III. Chi tiết buổi làm việc</a>
+  </nav>
+
+  <main id="main">
+    <section class="hero" id="tong-quan">
+      <div class="eyebrow">Kế hoạch triển khai · Base Digital Workspace</div>
+      <h1>Dự án triển khai nền tảng làm việc số Base cho Hanmedic</h1>
+      <div class="dest"><span class="lbl">Đích đến</span><b>Toàn bộ nhân sự vận hành công việc và yêu cầu nội bộ trên Base</b><span class="small">Golive 10/11/2026</span></div>
+      <div class="ov" id="ov"></div>
+      <div class="mline"><div class="mtrack" id="mtrack"><div class="done" id="mdone"></div></div></div>
+    </section>
+
+    <!-- PHẦN I -->
+    <h2 id="muc-tieu"><span class="sn">I</span>Mục tiêu dự án</h2>
+    <p class="sec-lead">Số hóa quản lý công việc theo dự án và các yêu cầu giữa phòng ban trên Base, áp dụng cho toàn bộ 30 nhân sự Hanmedic.</p>
+
+    <div class="h3" id="hien-trang"><span class="sn sm">1.1</span>Hiện trạng và đầu ra sau triển khai</div>
+    <div class="asis">
+      <div class="card now">
+        <h4>Hiện trạng</h4>
+        <ul>
+          <li>Một dự án thầu đi qua nhiều phòng ban (Dự án, Mua hàng, Kho, Kinh doanh, Kế toán), tiến độ trao đổi qua nhiều kênh, khó theo dõi tập trung.</li>
+          <li>Yêu cầu mua hàng, xuất kho giữa các phòng thực hiện thủ công, chưa kiểm soát được người xử lý và thời hạn.</li>
+          <li>Thông báo nội bộ và tài liệu dùng chung chưa tập trung một nơi.</li>
+        </ul>
+      </div>
+      <div class="ar" aria-hidden="true">→</div>
+      <div class="card tobe">
+        <h4>Đầu ra sau triển khai</h4>
+        <div class="outrow"><div><span class="chip ev">Base WeWork</span></div><div>Thiết lập cơ cấu phòng ban; mỗi dự án thầu được quản lý thành một dự án; nhân sự lập kế hoạch và báo cáo công việc trên hệ thống.</div></div>
+        <div class="outrow"><div><span class="chip po">Base Service</span></div><div>Số hóa quy trình Yêu cầu mua hàng và Yêu cầu xuất kho: có người tiếp nhận, thời hạn và trạng thái xử lý.</div></div>
+        <div class="outrow"><div><span class="chip ns">Nền tảng chung</span></div><div>Truyền thông nội bộ trên Base Inside, Square; lưu trữ tài liệu trên Base Office; lịch họp và đặt phòng trên Base Meeting, Booking.</div></div>
+      </div>
+    </div>
+
+    <div class="h3" id="pham-vi"><span class="sn sm">1.2</span>Phạm vi dự án</div>
+    <div class="scope">
+      <div class="card in">
+        <h4>Giai đoạn này <span class="tag">Gói Digital Workspace Advance</span></h4>
+        <div class="nums">
+          <div><b>30</b><span>tài khoản nhân sự</span></div>
+          <div><b>6</b><span>phòng ban trên Base WeWork</span></div>
+          <div><b>2</b><span>quy trình trên Base Service</span></div>
+          <div><b>2 tuần</b><span>triển khai, sau đó vận hành</span></div>
+        </div>
+      </div>
+      <div class="later">
+        <h4>Để sau <span class="tag">Đưa vào giai đoạn mở rộng</span></h4>
+        <ul>
+          <li>Quy trình phê duyệt đề xuất (Base Request)</li>
+          <li>Quy trình nhiều bước có điều kiện (Base Workflow)</li>
+          <li>Quản trị nhân sự, chấm công, lương (Base HRM)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PHẦN II -->
+    <h2 id="timeline"><span class="sn">II</span>Timeline triển khai</h2>
+    <p class="sec-lead">2 tuần triển khai từ 02/11 đến 13/11, golive ngày 10/11. Từ 16/11, Hanmedic chuyển sang vận hành, Base hỗ trợ và đánh giá sau 30 ngày.</p>
+
+    <div class="h3" id="lich"><span class="sn sm">2.1</span>Lộ trình và mốc xác nhận</div>
+    <div class="cal">
+      <div class="cal-top"><b id="calRange"></b><span class="small" id="calNote"></span></div>
+      <div class="cal-scroll"><div class="cal-grid" id="cal"></div></div>
+      <div class="cal-legend">
+        <span><i class="lg" style="background:var(--po-s);border:1px dashed var(--po)"></i>Hanmedic chuẩn bị</span>
+        <span><i class="lg" style="background:var(--brand-s);border:1px dashed var(--brand)"></i>Sắp tới</span>
+        <span><i class="lg" style="background:var(--brand)"></i>Đang làm</span>
+        <span><i class="lg" style="background:var(--core)"></i>Đã xong</span>
+        <span><i class="lg" style="background:var(--core-s);border:1px dashed var(--core)"></i>Vận hành</span>
+        <span><i class="lg" style="background:var(--po);width:10px;transform:rotate(45deg)"></i>Mốc xác nhận M1–M4 (xem 2.2)</span>
+        <span><i class="lg" style="background:var(--danger);width:3px"></i>Hôm nay</span>
+      </div>
+    </div>
+
+    <div class="h3" id="dau-ra-moc"><span class="sn sm">2.2</span>Mục tiêu cần đạt tại từng mốc</div>
+    <div class="mgoals" id="mgoals"></div>
+
+    <div class="h3" id="giu-moc"><span class="sn sm">2.3</span>Điều kiện để giữ mốc</div>
+    <p class="sec-lead">Kế hoạch giữ được khi các việc sau hoàn thành trước buổi làm việc đầu tiên.</p>
+    <div class="conds">
+      <div class="card cond"><div class="hd"><span class="n">1</span><b>Gửi danh sách nhân sự trước 30/10</b></div><p>Họ tên, email, phòng ban, chức vụ của 30 nhân sự để tạo tài khoản và cơ cấu tổ chức.</p><span class="chip ns">Hanmedic</span></div>
+      <div class="card cond"><div class="hd"><span class="n">2</span><b>Gửi dữ liệu mẫu trước 30/10</b></div><p>1 dự án thầu đang triển khai và mẫu phiếu yêu cầu mua hàng, xuất kho đang dùng.</p><span class="chip ns">Hanmedic</span></div>
+      <div class="card cond"><div class="hd"><span class="n">3</span><b>Chỉ định Ban dự án trước 02/11</b></div><p>Mỗi phòng ban một đầu mối, tham gia buổi thiết lập và tiếp nhận bàn giao.</p><span class="chip ns">Anh Phạm Đức Bắc</span></div>
+    </div>
+
+    <!-- PHẦN III -->
+    <h2 id="buoi"><span class="sn">III</span>Chi tiết buổi làm việc</h2>
+    <p class="sec-lead">Buổi onsite tại văn phòng Hanmedic, Số 25 Hoàng Văn Thái. Sau mỗi buổi, Base gửi biên bản và việc cần làm của hai bên.</p>
+    <div class="sess" id="sess"></div>
+
+    <footer>Cập nhật <span id="upd"></span>. Đầu mối dự án: anh Phạm Đức Bắc, Giám đốc Hanmedic; Đinh Trường Sơn, Chuyên viên triển khai Base.vn.</footer>
+  </main>
+</div>
+
+<script>
+/* ============ DỮ LIỆU KẾ HOẠCH: sửa tại đây ============ */
+const UPDATED = "27/10/2026";
+const YEAR = 2026;
+const CAL_FROM = "26/10", CAL_TO = "22/11";      // khung lịch hiển thị (bắt đầu thứ 2, kết thúc CN)
+
+const PHASES = [
+  {name:"Chuẩn bị dữ liệu", out:"Danh sách nhân sự, dữ liệu mẫu", from:"27/10", to:"30/10", kind:"kh"},
+  {name:"Thiết lập hệ thống", out:"Base WeWork, Service, nền tảng chung sẵn sàng", from:"02/11", to:"06/11"},
+  {name:"Đào tạo và golive", out:"Nhân sự nắm thao tác, golive", from:"09/11", to:"10/11"},
+  {name:"Hỗ trợ sau golive", out:"Bàn giao Ban dự án", from:"11/11", to:"13/11"},
+  {name:"Vận hành", out:"100% nhân sự dùng hằng ngày", from:"16/11", to:"22/11", kind:"op"}
+];
+
+const SESSIONS = [
+  {d:"02/11", time:"9:00 – 11:30", mode:"Onsite", title:"Kickoff và thiết lập Base WeWork",
+   who:"Anh Phạm Đức Bắc, Ban dự án",
+   content:["Chốt mục tiêu, phạm vi và kế hoạch triển khai","Thiết lập cơ cấu 6 phòng ban, tạo 30 tài khoản","Dựng dự án mẫu từ 1 dự án thầu đang triển khai"],
+   out:"Cơ cấu tổ chức và dự án mẫu trên Base WeWork", prep:"Danh sách nhân sự, dữ liệu 1 dự án thầu"},
+  {d:"05/11", time:"14:00 – 16:00", mode:"Online", title:"Thiết lập Base Service và nền tảng chung",
+   who:"Ban dự án",
+   content:["Dựng quy trình Yêu cầu mua hàng, Yêu cầu xuất kho","Thiết lập Base Inside, Office, Meeting, Booking","Chạy thử luồng trên dữ liệu thật"],
+   out:"2 quy trình Base Service chạy thử thành công", prep:"Mẫu phiếu mua hàng, xuất kho đang dùng"},
+  {d:"10/11", time:"9:00 – 11:30", mode:"Onsite", title:"Đào tạo toàn bộ nhân sự và golive",
+   who:"Toàn bộ 30 nhân sự",
+   content:["Cài đặt ứng dụng Base trên máy tính và điện thoại","Hướng dẫn lập kế hoạch, báo cáo công việc trên Base WeWork","Hướng dẫn tạo và xử lý yêu cầu trên Base Service"],
+   out:"Nhân sự thao tác được, công bố golive", prep:"Phòng đào tạo, máy chiếu, nhân sự mang laptop và điện thoại"},
+  {d:"13/11", time:"14:00 – 15:00", mode:"Online", title:"Review sau golive và bàn giao",
+   who:"Ban dự án",
+   content:["Giải đáp vướng mắc tuần đầu sử dụng","Điều chỉnh thiết lập theo thực tế","Bàn giao tài liệu hướng dẫn sử dụng"],
+   out:"Ban dự án tiếp nhận vận hành", prep:"Tổng hợp vướng mắc từ các phòng ban"}
+];
+
+const MILESTONES = [
+  {d:"02/11", name:"Hoàn tất thiết lập Base WeWork", short:"Thiết lập WeWork",
+   goals:["Cơ cấu 6 phòng ban và 30 tài khoản trên hệ thống","Dự án mẫu từ 1 dự án thầu thật","Ban dự án tạo được dự án và giao việc"], apps:[["ev","Base WeWork"]]},
+  {d:"05/11", name:"Hoàn tất thiết lập Base Service", short:"Thiết lập Service",
+   goals:["Quy trình Yêu cầu mua hàng","Quy trình Yêu cầu xuất kho","Kênh thông báo, kho tài liệu, lịch họp sẵn sàng"], apps:[["po","Base Service"],["ns","Inside, Office"]]},
+  {d:"10/11", name:"Đào tạo hoàn tất và golive", short:"Golive", big:true,
+   goals:["100% nhân sự đăng nhập và cài ứng dụng","Nhân sự nắm thao tác báo cáo công việc, tạo yêu cầu","Dự án, yêu cầu mới chỉ tạo trên Base"], apps:[["ev","Base WeWork"],["po","Base Service"]]},
+  {d:"16/11", name:"Vận hành", short:"Vận hành", big:true,
+   goals:["Toàn bộ nhân sự lập kế hoạch và báo cáo tuần trên Base WeWork","100% yêu cầu mua hàng, xuất kho gửi qua Base Service","Ban Giám đốc theo dõi tiến độ dự án trên hệ thống"], apps:[["core","Đánh giá 30 ngày: 11/12"]]}
+];
+
+/* ============ Render ============ */
+const D=s=>{const[d,m]=s.split("/").map(Number);return new Date(YEAR,m-1,d)};
+const fmt=dt=>String(dt.getDate()).padStart(2,"0")+"/"+String(dt.getMonth()+1).padStart(2,"0");
+const DOW=["CN","T2","T3","T4","T5","T6","T7"], DAY=864e5;
+const t0=new Date(), today=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate());
+document.getElementById("upd").textContent=UPDATED;
+const sess=SESSIONS.map((s,i)=>({...s,no:i+1,dt:D(s.d)}));
+const ms=MILESTONES.map(m=>({...m,dt:D(m.d)}));
+const nextS=sess.find(s=>s.dt>=today), nextM=ms.find(m=>m.dt>=today);
+const curP=PHASES.find(p=>today>=D(p.from)&&today<=D(p.to))||PHASES.find(p=>D(p.from)>today);
+const left=d=>{const n=Math.round((d-today)/DAY);return n<=0?"Hôm nay":"Còn "+n+" ngày"};
+
+// overview
+(()=>{
+  let pct=0; if(curP){const a=D(curP.from),b=D(curP.to);pct=Math.max(0,Math.min(100,Math.round((today-a+DAY)/(b-a+DAY)*100)));}
+  document.getElementById("ov").innerHTML=
+   '<div class="card"><div class="rl">Giai đoạn hiện tại</div><h4>'+(curP?curP.name:"Vận hành")+'</h4><div class="pbar"><i style="width:'+pct+'%"></i></div><div class="small">'+(curP?curP.from+" – "+curP.to+". "+curP.out:"")+'</div></div>'+
+   '<div class="card ms"><div class="rl">Mốc sắp tới</div><h4>'+(nextM?nextM.name:"—")+'</h4>'+(nextM?'<span class="cnt">'+left(nextM.dt)+'</span> <span class="small">'+DOW[nextM.dt.getDay()]+' '+nextM.d+'</span>':'')+'</div>'+
+   '<div class="card nx"><div class="rl">Buổi làm việc tới</div><h4>'+(nextS?nextS.title:"Không còn buổi nào")+'</h4>'+(nextS?'<div class="small"><b style="color:var(--ink)">'+DOW[nextS.dt.getDay()]+' '+nextS.d+', '+nextS.time+'</b>. '+nextS.mode+'</div>':'')+'</div>';
+})();
+
+// milestone line
+(()=>{
+  const pts=[{d:"02/11",name:"Kickoff",dt:D("02/11")}].concat([]);
+  const line=[{name:"Kickoff, thiết lập WeWork",d:"02/11"},{name:"Thiết lập Service",d:"05/11"},{name:"Golive",d:"10/11",big:true},{name:"Bàn giao",d:"13/11"},{name:"Vận hành",d:"16/11",big:true},{name:"Đánh giá 30 ngày",d:"11/12",big:true}].map(x=>({...x,dt:D(x.d)}));
+  const n=line.length-1, tr=document.getElementById("mtrack");
+  const pos=d=>{if(d<=line[0].dt)return 0;if(d>=line[n].dt)return 100;for(let i=0;i<n;i++)if(d<=line[i+1].dt)return(i+(d-line[i].dt)/(line[i+1].dt-line[i].dt))*100/n;return 100};
+  line.forEach(m=>{const k=document.createElement("div");k.className="mk"+(m.dt<today?" past":"")+(m.big?" big":"");k.style.left=pos(m.dt)+"%";
+    k.innerHTML='<div class="d"></div><div class="t">'+m.name+'<small>'+DOW[m.dt.getDay()]+' '+m.d+'</small></div>';tr.appendChild(k)});
+  document.getElementById("mdone").style.width=pos(today)+"%";
+  const t=document.createElement("div");t.className="today";t.style.left=(today<line[0].dt?0:pos(today))+"%";t.innerHTML='<span>Hôm nay '+fmt(today)+'</span>';tr.appendChild(t);
+})();
+
+// calendar
+(()=>{
+  const a=D(CAL_FROM), b=D(CAL_TO), days=Math.round((b-a)/DAY)+1;
+  const idx=d=>Math.round((d-a)/DAY)+2; // grid column (1 = label)
+  const g=document.getElementById("cal");
+  g.style.gridTemplateColumns="210px repeat("+days+",minmax(23px,1fr))";
+  document.getElementById("calRange").textContent="Kế hoạch "+CAL_FROM+" – "+CAL_TO+"/"+YEAR;
+  document.getElementById("calNote").textContent="Triển khai 2 tuần, golive 10/11, vận hành từ 16/11";
+  let h='<div class="c-lab" style="grid-row:1"><span>Giai đoạn → đầu ra</span></div>';
+  for(let i=0;i<days;i++){const d=new Date(a.getTime()+i*DAY),w=d.getDay();h+='<div class="c-hd'+(w===0||w===6?' we':'')+(w===1?' wk':'')+'" style="grid-row:1;grid-column:'+(i+2)+'"><b>'+d.getDate()+'</b>'+DOW[w]+'</div>'}
+  const rows=PHASES.length+2; let r=2;
+  const cells=row=>{let s='';for(let i=0;i<days;i++){const w=new Date(a.getTime()+i*DAY).getDay();s+='<div class="c-cell'+(w===0||w===6?' we':'')+(w===1?' wk':'')+'" style="grid-row:'+row+';grid-column:'+(i+2)+'"></div>'}return s};
+  PHASES.forEach(p=>{
+    const f=D(p.from),t=D(p.to);
+    const st=p.kind||(t<today?"done":f<=today?"now":"plan");
+    h+='<div class="c-lab" style="grid-row:'+r+'"><b>'+p.name+'</b><span>'+(p.kind==="op"?"Từ "+p.from:p.from+" – "+p.to)+' → '+p.out+'</span></div>'+cells(r)+
+       '<div class="c-bar '+st+'" style="grid-row:'+r+';grid-column:'+idx(f)+' / '+(idx(t)+1)+'">'+(p.kind==="op"?"Vận hành →":"")+'</div>';
+    r++;
+  });
+  h+='<div class="c-lab" style="grid-row:'+r+'"><b>Buổi làm việc</b><span>4 buổi, onsite và online</span></div>'+cells(r);
+  sess.forEach(s=>{h+='<div class="c-ses'+(s.dt<today?'':' on')+'" style="grid-row:'+r+';grid-column:'+idx(s.dt)+'" title="'+s.title+'">B'+s.no+'</div>'}); r++;
+  h+='<div class="c-lab" style="grid-row:'+r+'"><b>Mốc xác nhận</b><span>Hai bên cùng xác nhận</span></div>'+cells(r);
+  ms.forEach((m,i)=>{h+='<div class="c-ms" style="grid-row:'+r+';grid-column:'+idx(m.dt)+' / span 2" title="'+m.name+'"><i></i>M'+(i+1)+'</div>'});
+  if(today>=a&&today<=b) h+='<div class="c-today" style="grid-row:2 / '+(r+1)+';grid-column:'+idx(today)+'"></div>';
+  g.innerHTML=h;
+})();
+
+// milestone goals
+document.getElementById("mgoals").innerHTML=ms.map(m=>
+  '<div class="card mg'+(m.big?' big':'')+'"><div class="when">M'+(ms.indexOf(m)+1)+'. '+(m.short==="Vận hành"?"Từ ":"Sau ")+DOW[m.dt.getDay()]+' '+m.d+'</div><h4>'+m.name+'</h4><ul>'+m.goals.map(g=>'<li>'+g+'</li>').join("")+'</ul><div class="chips">'+m.apps.map(x=>'<span class="chip '+x[0]+'">'+x[1]+'</span>').join("")+'</div></div>'
+).join("");
+
+// sessions
+document.getElementById("sess").innerHTML=sess.map(s=>{
+  const st=s===nextS?"next":s.dt<today?"done":"";
+  const tag=st==="next"?'<span class="chip core">Buổi tiếp theo</span>':st==="done"?'<span class="tag">Đã diễn ra</span>':'';
+  return '<div class="ses '+st+'"><div class="dt"><span class="no">Buổi '+s.no+'</span><b>'+DOW[s.dt.getDay()]+' '+s.d+'</b><span class="small">'+s.time+'</span><span class="chip '+(s.mode==="Onsite"?"ev":"ns")+'">'+s.mode+'</span>'+tag+'</div>'+
+    '<div class="bd"><h4>'+s.title+'</h4><ul>'+s.content.map(c=>'<li>'+c+'</li>').join("")+'</ul></div>'+
+    '<div class="rs"><div class="out"><div class="rl">Kết quả</div><b>'+s.out+'</b></div><div><div class="rl">Thành phần</div>'+s.who+'</div><div><div class="rl">Hanmedic chuẩn bị</div>'+s.prep+'</div></div></div>';
+}).join("");
+
+// topbar
+(()=>{
+  let z=100;const main=document.getElementById("main"),v=document.getElementById("zVal");
+  const set=n=>{z=Math.max(80,Math.min(140,n));main.style.zoom=z/100;v.textContent=z+"%"};
+  document.getElementById("zIn").onclick=()=>set(z+10);document.getElementById("zOut").onclick=()=>set(z-10);v.onclick=()=>set(100);
+  const root=document.documentElement;
+  try{const t=localStorage.getItem("hm-theme");if(t)root.dataset.theme=t}catch(e){}
+  document.getElementById("themeBtn").onclick=()=>{const cur=root.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");root.dataset.theme=cur==="dark"?"light":"dark";try{localStorage.setItem("hm-theme",root.dataset.theme)}catch(e){}};
+  const links=[...document.querySelectorAll("nav.side a")],targets=links.map(a=>document.querySelector(a.getAttribute("href")));
+  addEventListener("scroll",()=>{let i=0;targets.forEach((t,k)=>{if(t&&t.getBoundingClientRect().top<120)i=k});links.forEach((a,k)=>a.classList.toggle("act",k===i))},{passive:true});
+})();
+</script>
+</body>
+</html>
